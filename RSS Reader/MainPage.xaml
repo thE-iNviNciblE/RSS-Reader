@@ -31,8 +31,8 @@
             </ListView>
             <Button
                 x:Name="CounterBtn"
-                Text="Click me"
-                SemanticProperties.Hint="Counts the number of times you click"
+                Text="Read Feed"
+                SemanticProperties.Hint="RSS Feed einlesen"
                 Clicked="OnCounterClicked"
                 HorizontalOptions="Center" />
 
