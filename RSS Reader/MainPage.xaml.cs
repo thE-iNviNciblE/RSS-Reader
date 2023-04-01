@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Reflection.Metadata.Ecma335;
 using System.Xml.Linq;
-
+using System.Windows;
+using Windows.UI.Notifications;
 namespace RSS_Reader;
 public class CustomCell : ViewCell
 {
@@ -14,6 +15,77 @@ public class CustomCell : ViewCell
         label2.SetBinding(Label.TextProperty, "pubDate");
          
     }
+}
+public void ShowToastNotification(string title, string content)
+{
+    // Construct the visuals of the toast
+    ToastVisual visual = new ToastVisual()
+    {
+        BindingGeneric = new ToastBindingGeneric()
+        {
+            Children =
+            {
+                new AdaptiveText() { Text = title },
+                new AdaptiveText() { Text = content }
+            }
+        }
+    };
+
+    // Construct the actions for the toast (inputs and buttons)
+    ToastActionsCustom actions = new ToastActionsCustom()
+    {
+        Inputs =
+        {
+            new ToastTextBox("tbReply") { PlaceholderContent = "Type a response" }
+        },
+
+        Buttons =
+        {
+            new ToastButton("Reply", "action=reply")
+            {
+                ActivationType = ToastActivationType.Background,
+                ImageUri = "Assets/Reply.png",
+                TextBoxId = "tbReply"
+            },
+
+            new ToastButton("Like", "action=like")
+            {
+                ActivationType = ToastActivationType.Background
+            },
+
+            new ToastButton("View", "action=viewImage")
+            {
+                ActivationType = ToastActivationType.Foreground
+            }
+        }
+    };
+
+    // Construct the final toast content
+    ToastContent toastContent = new ToastContent()
+    {
+        Visual = visual,
+        Actions = actions,
+
+        // Arguments when the user taps body of toast
+        Launch = new QueryString()
+        {
+            { "action", "viewConversation" },
+            { "conversationId", 9813.ToString() }
+        }.ToString(),
+
+        // Arguments when the user taps one of the actions
+        Arguments = new QueryString()
+        {
+            { "action", "reply" },
+            { "conversationId", 9813.ToString() }
+        }.ToString()
+    };
+
+    // And create the toast notification
+    var toastNotif = new ToastNotification(toastContent.GetXml());
+
+    // And then show it
+    ToastNotificationManager.CreateToastNotifier().Show(toastNotif);
 }
 
 public partial class MainPage : ContentPage
