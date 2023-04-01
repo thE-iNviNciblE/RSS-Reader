@@ -29,12 +29,8 @@ public partial class MainPage : ContentPage
         var url = "https://tsecurity.de/RSS/9/CVE/";
         var xml = await client.GetStringAsync(url);
       
-        var doc = XDocument.Parse(xml,LoadOptions.PreserveWhitespace ); // 201 Elemente
-        var channel = doc.Root; // 114 Elemente
-        // Woran kann der Unterschied nach XDocument.Parse liegen? 
-        // Warum werden nicht alle RSS Elemente angezeigt?
-        // In dieser Quelle https://tsecurity.de/RSS/9/CVE/ sind 201 RSS Elemente vorhanden
-        // In der App werden nur 114 angezeigt
+        var doc = XDocument.Parse(xml,LoadOptions.PreserveWhitespace ); 
+        var channel = doc.Root; 
 
         var ns = channel.GetDefaultNamespace();
         var nsContent = channel.GetNamespaceOfPrefix("content");
