@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection.Metadata.Ecma335;
 using System.Xml.Linq;
 
 namespace RSS_Reader;
@@ -17,23 +18,28 @@ public class CustomCell : ViewCell
 
 public partial class MainPage : ContentPage
 {
-	public MainPage()
-	{
+	public MainPage()	{
 		InitializeComponent();
 	}
 
-    private void OnCounterClicked(object sender, EventArgs e)
-    {
-        const string URL = "https://tsecurity.de/RSS/1/Windows%2011/";
 
+    private async void OnCounterClicked(object sender, EventArgs e)
+    { 
+        var client = new HttpClient();
+        var url = "https://tsecurity.de/RSS/9/CVE/";
+        var xml = await client.GetStringAsync(url);
+      
+        var doc = XDocument.Parse(xml,LoadOptions.PreserveWhitespace ); // 201 Elemente
+        var channel = doc.Root; // 114 Elemente
+        // Woran kann der Unterschied nach XDocument.Parse liegen? 
+        // Warum werden nicht alle RSS Elemente angezeigt?
+        // In dieser Quelle https://tsecurity.de/RSS/9/CVE/ sind 201 RSS Elemente vorhanden
+        // In der App werden nur 114 angezeigt
 
-        XDocument doc = XDocument.Load(URL);
-        XElement channel = doc.Root;
-        XNamespace ns = channel.GetDefaultNamespace();
-        XNamespace nsContent = channel.GetNamespaceOfPrefix("content");
-        XNamespace nsRDF = channel.GetNamespaceOfPrefix("rdf");
-
-        List<RSS_Item> items = doc.Descendants(ns + "item").Select(x => new RSS_Item()
+        var ns = channel.GetDefaultNamespace();
+        var nsContent = channel.GetNamespaceOfPrefix("content");
+        var nsRDF = channel.GetNamespaceOfPrefix("rdf");
+        var items = doc.Descendants(ns + "item").Select(x => new RSS_Item()
         {
             title = (string)x.Element(ns + "title"),
             link = (string)x.Element(ns + "link"),
@@ -44,36 +50,26 @@ public partial class MainPage : ContentPage
             description = (string)x.Element(ns + "description"),
             time_left = $"{(int)(DateTime.Now - (DateTime)x.Element(ns + "pubDate")).TotalMinutes} Minuten "
         }).ToList();
-
-        /* lvwRSS_Liste.ItemsSource = new List<Item>
-         * var timeSpan = DateTime.Now - dateTime
-          {
-              new Item { title = "Person 1", pubDate = "person1.png" },
-              new Item { title = "Person 2", pubDate = "person2.png" },
-          };
-
-         lvwRSS_Liste.ItemTemplate = new DataTemplate(typeof(CustomCell));*/
-
-        //lvwRSS_Liste.ItemTemplate = new DataTemplate(() =>
-        //{
-        //    var label = new Label { FontSize = 24 };
-        //    label.SetBinding(Label.TextProperty, items[0].title);
-        //    return new ViewCell { View = label };
-        //});
-        lvwRSS_Liste.ItemsSource = items;
-        // ListView listView = new ListView();
-        // listView.ItemsSource = new List<string> { Item };
-
+  
+        foreach (RSS_Item item in items)
+        {
+            item.title = (string)item.link;
+            Console.WriteLine(item.title);
+            Console.WriteLine(item.link);
+            Console.WriteLine(item.pubDate);
+            Console.WriteLine(item.guid);
+            Console.WriteLine(item.description);
+            Console.WriteLine(item.time_left);
+        }
+ 
+        lvwRSS_Liste.ItemsSource = items; 
     }
-
     private async void OnItemClick(object sender, ItemTappedEventArgs e)
     {
         // Handle item click
         var item = (RSS_Item) e.Item;
         await Launcher.OpenAsync(item.link);
-
-    }
-
+    }    
 
     public class RSS_Item
     {
